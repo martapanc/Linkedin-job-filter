@@ -1,0 +1,216 @@
+/* content.css — injected into LinkedIn job pages */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+#ljf-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 340px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #0f0f11;
+  color: #e8e8ea;
+  border-radius: 12px;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  z-index: 9999;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+  transition: border-color 0.3s ease;
+  border: 1.5px solid rgba(255,255,255,0.08);
+}
+
+/* Verdict color accents on the panel border */
+#ljf-panel.ljf-suitable { border-color: #22c55e; box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px #22c55e33; }
+#ljf-panel.ljf-check    { border-color: #f59e0b; box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px #f59e0b33; }
+#ljf-panel.ljf-unsuitable { border-color: #ef4444; box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px #ef444433; }
+
+/* ── Header ── */
+#ljf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  position: sticky;
+  top: 0;
+  background: #0f0f11;
+  z-index: 1;
+}
+
+#ljf-logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: #888;
+  text-transform: uppercase;
+}
+
+#ljf-toggle {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #888;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+#ljf-toggle:hover { background: rgba(255,255,255,0.08); color: #e8e8ea; }
+
+/* ── Body ── */
+#ljf-body { padding: 14px; }
+
+/* ── Loading state ── */
+#ljf-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #888;
+  font-size: 12px;
+}
+
+.ljf-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.1);
+  border-top-color: #888;
+  border-radius: 50%;
+  animation: ljf-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ljf-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Error ── */
+.ljf-error {
+  color: #f87171;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ── Verdict row ── */
+.ljf-verdict-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.ljf-verdict-icon { font-size: 20px; flex-shrink: 0; line-height: 1.2; }
+
+.ljf-verdict-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #f0f0f2;
+  margin-bottom: 2px;
+}
+
+.ljf-verdict-reason {
+  font-size: 11.5px;
+  color: #888;
+  line-height: 1.4;
+}
+
+/* ── Sections ── */
+.ljf-section {
+  margin-bottom: 12px;
+}
+
+.ljf-section-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+/* Location row */
+.ljf-loc-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ljf-loc-badge {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #c0c0c8;
+}
+
+.ljf-arrow { color: #444; font-size: 12px; }
+
+.ljf-loc-actual {
+  font-size: 12px;
+  color: #d0d0d8;
+  flex: 1;
+}
+
+.ljf-notes {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Lists */
+.ljf-list {
+  margin: 0;
+  padding: 0 0 0 16px;
+}
+
+.ljf-list li {
+  font-size: 12px;
+  margin-bottom: 3px;
+  color: #c8c8d0;
+}
+
+.ljf-flags li { color: #fca5a5; }
+.ljf-positives li { color: #86efac; }
+
+/* Key facts tags */
+.ljf-keyfacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.ljf-tag {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #a0a0b0;
+}
+
+.ljf-tag.ljf-tech { color: #93c5fd; border-color: rgba(147,197,253,0.2); background: rgba(147,197,253,0.05); }
+.ljf-tag.ljf-salary { color: #86efac; border-color: rgba(134,239,172,0.2); background: rgba(134,239,172,0.05); }
+
+/* Scrollbar styling */
+#ljf-panel::-webkit-scrollbar { width: 4px; }
+#ljf-panel::-webkit-scrollbar-track { background: transparent; }
+#ljf-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }

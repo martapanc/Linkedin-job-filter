@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkedIn Job Filter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 320px;
+      background: #0f0f11;
+      color: #e8e8ea;
+      font-family: 'IBM Plex Sans', system-ui, sans-serif;
+      font-size: 13px;
+    }
+
+    .header {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .header-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    .header-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #f0f0f2;
+    }
+
+    .header-name span { color: #60a5fa; }
+
+    .content { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+
+    label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #888;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .label-hint {
+      font-size: 10.5px;
+      color: #555;
+      font-family: 'IBM Plex Sans', sans-serif;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 400;
+    }
+
+    input, textarea {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      color: #e8e8ea;
+      padding: 8px 10px;
+      font-size: 12.5px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+
+    input[type="password"] { font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.1em; }
+
+    input:focus, textarea:focus { border-color: rgba(96,165,250,0.5); background: rgba(96,165,250,0.04); }
+
+    textarea { resize: vertical; min-height: 52px; line-height: 1.5; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .save-btn {
+      background: #1d4ed8;
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.15s;
+      font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    .save-btn:hover { background: #2563eb; }
+    .save-btn:active { background: #1e40af; }
+
+    .feedback {
+      text-align: center;
+      font-size: 11.5px;
+      color: #22c55e;
+      height: 18px;
+      transition: opacity 0.3s;
+    }
+
+    .feedback.hidden { opacity: 0; }
+
+    .footer {
+      padding: 10px 16px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      font-size: 10.5px;
+      color: #444;
+      line-height: 1.5;
+    }
+
+    .footer a { color: #60a5fa; text-decoration: none; }
+    .footer a:hover { color: #93c5fd; }
+
+    .api-key-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .api-key-row input { flex: 1; }
+
+    .show-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      color: #888;
+      padding: 0 10px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: 'IBM Plex Mono', monospace;
+      transition: background 0.15s;
+    }
+
+    .show-btn:hover { background: rgba(255,255,255,0.08); color: #ccc; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">Extension</div>
+    <div class="header-name">LinkedIn <span>Job Filter</span></div>
+    <div style="font-size:10px;color:#444;margin-top:3px;font-family:'IBM Plex Mono',monospace;">powered by Gemini 2.5 Flash</div>
+  </div>
+
+  <div class="content">
+
+    <div class="field">
+      <label>
+        Gemini API Key
+        <span class="label-hint"> — free at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a></span>
+      </label>
+      <div class="api-key-row">
+        <input type="password" id="apiKey" placeholder="AIza…" autocomplete="off" spellcheck="false">
+        <button class="show-btn" id="showKey">show</button>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="field">
+      <label>
+        Your work location
+        <span class="label-hint"> — where you're physically based</span>
+      </label>
+      <textarea id="workLocation" rows="2" placeholder="e.g. Andorra, can work remotely across EU/EMEA. Not eligible to work in UK or USA."></textarea>
+    </div>
+
+    <div class="field">
+      <label>
+        Require keywords
+        <span class="label-hint"> — job should mention these (tech stack, etc.)</span>
+      </label>
+      <textarea id="requireKeywords" rows="2" placeholder="e.g. React, TypeScript, Node.js"></textarea>
+    </div>
+
+    <div class="field">
+      <label>
+        Flag keywords
+        <span class="label-hint"> — phrases that should trigger a warning</span>
+      </label>
+      <textarea id="flagKeywords" rows="2" placeholder="e.g. UK only, must be based in, right to work in UK, sponsorship not available"></textarea>
+    </div>
+
+    <button class="save-btn" id="saveBtn">Save settings</button>
+    <div class="feedback hidden" id="feedback">✓ Saved</div>
+
+  </div>
+
+  <div class="footer">
+    API key is stored locally in Chrome sync storage.<br>
+    Get a free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → Get API key.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
