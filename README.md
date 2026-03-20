@@ -2,7 +2,7 @@
 
 AI-powered job ad analyzer that reads LinkedIn listings and flags misleading "remote" roles where the candidate must actually be located in a specific country.
 
-Powered by **Google Gemini 2.5 Flash** via the free tier at Google AI Studio — no credit card required.
+Powered by **Google Gemini** via the free tier at Google AI Studio — no credit card required.
 
 ## What it does
 

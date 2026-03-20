@@ -11,51 +11,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 async function analyzeJob({ jobText, preferences }) {
-  const { apiKey, workLocation, flagKeywords, requireKeywords } = preferences;
+  const { apiKey, model, workLocation, flagKeywords, requireKeywords } = preferences;
 
   if (!apiKey) throw new Error("No API key set. Open the extension popup to configure.");
 
-  const systemInstruction = `You are a job ad analyst helping a developer find roles they can actually work from their location.
-The user's work situation:
-- Physical location: ${workLocation || "not specified"}
-- Must include (tech/keywords): ${requireKeywords || "not specified"}
-- Red flag phrases (if found, flag them): ${flagKeywords || "not specified"}
-
-Your job is to read a LinkedIn job ad and return a structured JSON object.
-CRITICAL: Return ONLY raw JSON. No markdown, no backticks, no explanation — just the JSON object.
-
-Use this exact shape:
-{
-  "verdict": "suitable" | "check" | "unsuitable",
-  "verdictReason": "one sentence summary",
-  "locationAnalysis": {
-    "advertised": "what the ad claims (e.g. Remote, Hybrid, On-site)",
-    "actualRequirement": "what is actually required after reading carefully (e.g. Must be UK-based, EU timezone only, etc.)",
-    "eligibleFromUserLocation": true | false | null,
-    "notes": "any caveats or ambiguities"
-  },
-  "flags": ["list of red flags found, e.g. 'UK residency required', 'sponsorship not available'"],
-  "positives": ["list of things that match the user's criteria"],
-  "keyFacts": {
-    "seniority": "e.g. Senior, Staff, Mid-level",
-    "stack": ["key technologies mentioned"],
-    "contractType": "Full-time / Contract / Part-time",
-    "salary": "if mentioned, else null"
-  }
-}
-
-Verdict logic:
-- "suitable": the user can likely work this from their location, meets their criteria
-- "check": unclear location requirements or some flags worth reviewing manually
-- "unsuitable": explicitly excludes the user's location, or missing required keywords
-
-Be a careful reader. A job that says "Remote" but then says "must be eligible to work in the UK" or "UK-based candidates only" is NOT truly remote-friendly for someone outside the UK. Flag this clearly.`;
+  const systemInstruction = `You are a job ad analyst. Return ONLY raw JSON, no markdown or explanation.
+User: location=${workLocation || "unspecified"}, must-have=${requireKeywords || "none"}, red-flags=${flagKeywords || "none"}.
+JSON shape:
+{"verdict":"suitable"|"check"|"unsuitable","verdictReason":"one sentence","locationAnalysis":{"advertised":"...","actualRequirement":"...","eligibleFromUserLocation":true|false|null,"notes":"..."},"flags":["..."],"positives":["..."],"keyFacts":{"seniority":"...","stack":["..."],"contractType":"...","salary":"..."}}
+Rules: suitable=user can work there and meets criteria; unsuitable=explicitly excludes user or missing must-haves; check=ambiguous. "Remote" jobs that require UK residency/right-to-work are unsuitable for non-UK users — flag this.`;
 
   const userPrompt = `Analyze this job ad:\n\n${jobText.slice(0, 8000)}`;
 
   // Gemini AI Studio endpoint (free tier key from aistudio.google.com)
-  const model = "gemini-2.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const selectedModel = model || "gemini-2.5-flash-lite";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
 
   const response = await fetch(url, {
     method: "POST",
@@ -73,8 +43,9 @@ Be a careful reader. A job that says "Remote" but then says "must be eligible to
         }
       ],
       generationConfig: {
-        temperature: 0.1,      // low temperature = more consistent/structured output
-        maxOutputTokens: 1024
+        temperature: 0.1,
+        maxOutputTokens: 512,
+        thinkingConfig: { thinkingBudget: 0 }
       }
     })
   });

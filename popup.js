@@ -1,12 +1,17 @@
 // popup.js
 
-const fields = ["apiKey", "workLocation", "requireKeywords", "flagKeywords"];
+const fields = ["apiKey", "model", "workLocation", "requireKeywords", "flagKeywords"];
 
 // Load saved settings
 chrome.storage.sync.get(fields, (data) => {
   fields.forEach(id => {
     const el = document.getElementById(id);
-    if (el && data[id]) el.value = data[id];
+    if (!el) return;
+    if (id === "model") {
+      el.value = data[id] || "gemini-2.5-flash-lite";
+    } else if (data[id]) {
+      el.value = data[id];
+    }
   });
 });
 

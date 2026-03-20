@@ -222,7 +222,7 @@
 
     const preferences = await new Promise(resolve => {
       chrome.storage.sync.get(
-        ["apiKey", "workLocation", "flagKeywords", "requireKeywords"],
+        ["apiKey", "model", "workLocation", "flagKeywords", "requireKeywords"],
         resolve
       );
     });
@@ -255,7 +255,7 @@
         currentJobId = newId;
         triggerAnalysis();
       }
-    }, 800); // wait for DOM to settle
+    }, 300); // wait for DOM to settle
   }
 
   function startObserver() {
@@ -294,5 +294,5 @@
       currentJobId = getJobIdFromURL();
       triggerAnalysis();
     }
-  }, 2000);
+  }, 500);
 })();

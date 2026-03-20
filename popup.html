@@ -145,13 +145,30 @@
     }
 
     .show-btn:hover { background: rgba(255,255,255,0.08); color: #ccc; }
+
+    select {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      color: #e8e8ea;
+      padding: 8px 10px;
+      font-size: 12.5px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      outline: none;
+      width: 100%;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    select:focus { border-color: rgba(96,165,250,0.5); background: rgba(96,165,250,0.04); }
+    select option { background: #1a1a1f; color: #e8e8ea; }
   </style>
 </head>
 <body>
   <div class="header">
     <div class="header-title">Extension</div>
     <div class="header-name">LinkedIn <span>Job Filter</span></div>
-    <div style="font-size:10px;color:#444;margin-top:3px;font-family:'IBM Plex Mono',monospace;">powered by Gemini 2.5 Flash</div>
+    <div style="font-size:10px;color:#444;margin-top:3px;font-family:'IBM Plex Mono',monospace;">powered by Google Gemini</div>
   </div>
 
   <div class="content">
@@ -165,6 +182,18 @@
         <input type="password" id="apiKey" placeholder="AIza…" autocomplete="off" spellcheck="false">
         <button class="show-btn" id="showKey">show</button>
       </div>
+    </div>
+
+    <div class="field">
+      <label>
+        Model
+        <span class="label-hint"> — switch if you hit rate limits</span>
+      </label>
+      <select id="model">
+        <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite — fastest, most quota (default)</option>
+        <option value="gemini-2.5-flash">gemini-2.5-flash — smarter, still fast</option>
+        <option value="gemini-2.5-pro">gemini-2.5-pro — most capable, lowest quota</option>
+      </select>
     </div>
 
     <hr class="divider">
