@@ -222,7 +222,7 @@
 
     const preferences = await new Promise(resolve => {
       chrome.storage.sync.get(
-        ["apiKey", "model", "workLocation", "flagKeywords", "requireKeywords"],
+        ["apiKey", "model", "workLocation", "flagKeywords", "requireKeywords", "provider", "localModel", "localEndpoint"],
         resolve
       );
     });

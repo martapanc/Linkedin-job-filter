@@ -11,9 +11,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 async function analyzeJob({ jobText, preferences }) {
-  const { apiKey, model, workLocation, flagKeywords, requireKeywords } = preferences;
-
-  if (!apiKey) throw new Error("No API key set. Open the extension popup to configure.");
+  const { apiKey, model, workLocation, flagKeywords, requireKeywords, provider, localModel, localEndpoint } = preferences;
 
   const systemInstruction = `You are a job ad analyst. Return ONLY raw JSON, no markdown or explanation.
 User: location=${workLocation || "unspecified"}, must-have=${requireKeywords || "none"}, red-flags=${flagKeywords || "none"}.
@@ -23,60 +21,83 @@ Rules: suitable=user can work there and meets criteria; unsuitable=explicitly ex
 
   const userPrompt = `Analyze this job ad:\n\n${jobText.slice(0, 8000)}`;
 
-  // Gemini AI Studio endpoint (free tier key from aistudio.google.com)
-  const selectedModel = model || "gemini-2.5-flash-lite";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
+  let raw;
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: systemInstruction }]
-      },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: userPrompt }]
-        }
-      ],
-      generationConfig: {
-        temperature: 0.1,
-        maxOutputTokens: 512,
-        thinkingConfig: { thinkingBudget: 0 }
-      }
-    })
-  });
+  if (provider === "local") {
+    if (!localModel) throw new Error("No local model set. Open the extension popup to configure.");
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    const msg = err?.error?.message || `Gemini API error ${response.status}`;
-    throw new Error(msg);
-  }
+    const endpoint = (localEndpoint || "http://localhost:11434").replace(/\/$/, "");
+    const url = `${endpoint}/v1/chat/completions`;
 
-  const data = await response.json();
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: localModel,
+        messages: [
+          { role: "system", content: systemInstruction },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.1
+      })
+    });
 
-  // Gemini response shape: data.candidates[0].content.parts[0].text
-  const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-  if (!raw) {
-    // Check for safety blocks or other finish reasons
-    const finishReason = data?.candidates?.[0]?.finishReason;
-    if (finishReason && finishReason !== "STOP") {
-      throw new Error(`Gemini stopped with reason: ${finishReason}`);
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      const msg = err?.error?.message || `Local model API error ${response.status}`;
+      throw new Error(msg);
     }
-    throw new Error("Empty response from Gemini API");
+
+    const data = await response.json();
+    raw = data?.choices?.[0]?.message?.content || "";
+
+    if (!raw) throw new Error("Empty response from local model");
+
+  } else {
+    // Gemini (default)
+    if (!apiKey) throw new Error("No API key set. Open the extension popup to configure.");
+
+    const selectedModel = model || "gemini-2.5-flash-lite";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 512,
+          thinkingConfig: { thinkingBudget: 0 }
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      const msg = err?.error?.message || `Gemini API error ${response.status}`;
+      throw new Error(msg);
+    }
+
+    const data = await response.json();
+    raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    if (!raw) {
+      const finishReason = data?.candidates?.[0]?.finishReason;
+      if (finishReason && finishReason !== "STOP") {
+        throw new Error(`Gemini stopped with reason: ${finishReason}`);
+      }
+      throw new Error("Empty response from Gemini API");
+    }
   }
 
-  // Strip any accidental markdown fences Gemini might add despite instructions
+  // Strip any accidental markdown fences
   const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
 
   try {
     return JSON.parse(cleaned);
   } catch {
-    // If JSON parse fails, return a graceful fallback
     return {
       verdict: "check",
       verdictReason: "Could not parse AI response. Check the job manually.",
