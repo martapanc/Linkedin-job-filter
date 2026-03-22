@@ -10,7 +10,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      width: 320px;
+      width: 380px;
       background: #0f0f11;
       color: #e8e8ea;
       font-family: 'IBM Plex Sans', system-ui, sans-serif;
@@ -40,7 +40,12 @@
 
     .header-name span { color: #60a5fa; }
 
-    .content { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .content {
+      padding: 12px 16px 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
     .field { display: flex; flex-direction: column; gap: 5px; }
 
@@ -105,20 +110,20 @@
 
     .feedback {
       text-align: center;
-      font-size: 11.5px;
+      font-size: 10px;
       color: #22c55e;
-      height: 18px;
+      height: 12px;
       transition: opacity 0.3s;
     }
 
     .feedback.hidden { opacity: 0; }
 
     .footer {
-      padding: 10px 16px;
+      padding: 8px 16px;
       border-top: 1px solid rgba(255,255,255,0.07);
-      font-size: 10.5px;
+      font-size: 10px;
       color: #444;
-      line-height: 1.5;
+      line-height: 1.2;
     }
 
     .footer a { color: #60a5fa; text-decoration: none; }
@@ -166,7 +171,6 @@
 </head>
 <body>
   <div class="header">
-    <div class="header-title">Extension</div>
     <div class="header-name">LinkedIn <span>Job Filter</span></div>
     <div id="header-provider-label" style="font-size:10px;color:#444;margin-top:3px;font-family:'IBM Plex Mono',monospace;">powered by Google Gemini</div>
   </div>
@@ -209,18 +213,21 @@
     <div id="local-section" style="display:none;">
       <div class="field" style="margin-top:14px;">
         <label>
-          Local model
-          <span class="label-hint"> — e.g. llama3.2, mistral, qwen2.5:7b</span>
-        </label>
-        <input type="text" id="localModel" placeholder="llama3.2" autocomplete="off" spellcheck="false">
-      </div>
-
-      <div class="field" style="margin-top:14px;">
-        <label>
           Endpoint URL
           <span class="label-hint"> — Ollama default: http://localhost:11434</span>
         </label>
         <input type="text" id="localEndpoint" placeholder="http://localhost:11434" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <label>Local model</label>
+        <div class="api-key-row">
+          <select id="localModel" style="flex:1;">
+            <option value="">— connect to load models —</option>
+          </select>
+          <button class="show-btn" id="refreshModels" title="Refresh model list">↻</button>
+        </div>
+        <div id="modelStatus" style="font-size:10.5px;color:#555;font-family:'IBM Plex Mono',monospace;margin-top:2px;"></div>
       </div>
     </div>
 
