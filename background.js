@@ -13,11 +13,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function analyzeJob({ jobText, preferences }) {
   const { apiKey, model, workLocation, flagKeywords, requireKeywords, provider, localModel, localEndpoint } = preferences;
 
-  const promptTemplate = await fetch(chrome.runtime.getURL("prompt.md")).then(r => r.text());
-  const systemInstruction = promptTemplate
-    .replace("{{workLocation}}", workLocation || "unspecified")
-    .replace("{{requireKeywords}}", requireKeywords || "none")
-    .replace("{{flagKeywords}}", flagKeywords || "none");
+  const userContext = [
+    `User location: ${workLocation || "unspecified"}`,
+    `Must-have keywords: ${requireKeywords || "none"}`,
+    `Flag keywords: ${flagKeywords || "none"}`,
+  ].join("\n");
+
+  const rules = await fetch(chrome.runtime.getURL("prompt.md")).then(r => r.text());
+  const systemInstruction = `${userContext}\n\n${rules.trim()}`;
 
   const userPrompt = `Analyze this job ad:\n\n${jobText.slice(0, 8000)}`;
 
