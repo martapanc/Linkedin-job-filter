@@ -13,11 +13,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function analyzeJob({ jobText, preferences }) {
   const { apiKey, model, workLocation, flagKeywords, requireKeywords, provider, localModel, localEndpoint } = preferences;
 
-  const systemInstruction = `You are a job ad analyst. Return ONLY raw JSON, no markdown or explanation.
-User: location=${workLocation || "unspecified"}, must-have=${requireKeywords || "none"}, red-flags=${flagKeywords || "none"}.
-JSON shape:
-{"verdict":"suitable"|"check"|"unsuitable","verdictReason":"one sentence","locationAnalysis":{"advertised":"...","actualRequirement":"...","eligibleFromUserLocation":true|false|null,"notes":"..."},"flags":["..."],"positives":["..."],"keyFacts":{"seniority":"...","stack":["..."],"contractType":"...","salary":"..."}}
-Rules: suitable=user can work there and meets criteria; unsuitable=explicitly excludes user or missing must-haves; check=ambiguous. "Remote" jobs that require UK residency/right-to-work are unsuitable for non-UK users — flag this.`;
+  const promptTemplate = await fetch(chrome.runtime.getURL("prompt.md")).then(r => r.text());
+  const systemInstruction = promptTemplate
+    .replace("{{workLocation}}", workLocation || "unspecified")
+    .replace("{{requireKeywords}}", requireKeywords || "none")
+    .replace("{{flagKeywords}}", flagKeywords || "none");
 
   const userPrompt = `Analyze this job ad:\n\n${jobText.slice(0, 8000)}`;
 

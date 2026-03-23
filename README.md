@@ -89,6 +89,8 @@ linkedin-job-filter/
 ├── content.css        # Styles for the injected panel
 ├── popup.html         # Settings UI
 ├── popup.js           # Settings load/save logic
+├── prompt.md          # AI system prompt with your personal rules (gitignored)
+├── sample-prompt.md   # Starter template — copy to prompt.md and customise
 ├── icons/             # Extension icons (add your own PNG icons here)
 └── README.md
 ```
@@ -102,7 +104,15 @@ linkedin-job-filter/
 
 ## Tweaking the AI prompt
 
-The analysis prompt is in `background.js` in the `systemInstruction` variable. You can edit it to change:
-- How it interprets location requirements
-- What counts as a flag vs. a positive
-- The verdict thresholds
+The prompt lives in `prompt.md` (gitignored — your personal copy). To get started:
+
+```bash
+cp sample-prompt.md prompt.md
+```
+
+Then edit `prompt.md` to reflect your situation: your timezone, region, what counts as a flag, how strictly to interpret location requirements, etc. Reload the extension after saving — no code changes needed.
+
+The three variables in the prompt are filled in at runtime from your popup settings:
+- `{{workLocation}}`
+- `{{requireKeywords}}`
+- `{{flagKeywords}}`

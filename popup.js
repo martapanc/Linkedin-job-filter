@@ -35,7 +35,6 @@ async function fetchLocalModels(savedModel) {
       select.appendChild(opt);
     });
 
-    // Restore saved selection if still available
     if (savedModel && models.includes(savedModel)) {
       select.value = savedModel;
     }
@@ -49,10 +48,32 @@ async function fetchLocalModels(savedModel) {
   }
 }
 
-// Load saved settings
+// ── Save ────────────────────────────────────────────────────────────────────
+
+function saveSettings() {
+  const data = {};
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value.trim();
+  });
+  chrome.storage.sync.set(data, () => {
+    const feedback = document.getElementById("feedback");
+    feedback.classList.remove("hidden");
+    setTimeout(() => feedback.classList.add("hidden"), 2000);
+  });
+}
+
+let debounceTimer;
+function saveDebounced() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(saveSettings, 600);
+}
+
+// ── Load saved settings ──────────────────────────────────────────────────────
+
 chrome.storage.sync.get(fields, (data) => {
   fields.forEach(id => {
-    if (id === "localModel") return; // handled separately after fetch
+    if (id === "localModel") return; // restored after model fetch
     const el = document.getElementById(id);
     if (!el) return;
     if (id === "model") {
@@ -74,12 +95,23 @@ chrome.storage.sync.get(fields, (data) => {
   }
 });
 
-// Toggle provider sections
+// ── Auto-save listeners ──────────────────────────────────────────────────────
+
+// Selects and checkboxes: save immediately on change
+["provider", "model", "localModel"].forEach(id => {
+  document.getElementById(id)?.addEventListener("change", saveSettings);
+});
+
+// Text inputs / textareas: debounce to avoid saving on every keystroke
+["apiKey", "workLocation", "requireKeywords", "flagKeywords", "localEndpoint"].forEach(id => {
+  document.getElementById(id)?.addEventListener("input", saveDebounced);
+});
+
+// ── Provider toggle ──────────────────────────────────────────────────────────
+
 document.getElementById("provider").addEventListener("change", (e) => {
   updateProviderUI(e.target.value);
-  if (e.target.value === "local") {
-    fetchLocalModels("");
-  }
+  if (e.target.value === "local") fetchLocalModels("");
 });
 
 // Refresh models when endpoint loses focus
@@ -94,7 +126,8 @@ document.getElementById("refreshModels").addEventListener("click", () => {
   fetchLocalModels(document.getElementById("localModel").value);
 });
 
-// Toggle API key visibility
+// ── API key visibility toggle ────────────────────────────────────────────────
+
 const apiKeyInput = document.getElementById("apiKey");
 const showKeyBtn = document.getElementById("showKey");
 showKeyBtn.addEventListener("click", () => {
@@ -103,17 +136,6 @@ showKeyBtn.addEventListener("click", () => {
   showKeyBtn.textContent = isHidden ? "hide" : "show";
 });
 
-// Save
-document.getElementById("saveBtn").addEventListener("click", () => {
-  const data = {};
-  fields.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) data[id] = el.value.trim();
-  });
+// ── Manual save button ───────────────────────────────────────────────────────
 
-  chrome.storage.sync.set(data, () => {
-    const feedback = document.getElementById("feedback");
-    feedback.classList.remove("hidden");
-    setTimeout(() => feedback.classList.add("hidden"), 2000);
-  });
-});
+document.getElementById("saveBtn").addEventListener("click", saveSettings);

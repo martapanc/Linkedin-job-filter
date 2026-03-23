@@ -175,8 +175,8 @@
         <div class="ljf-loc-row">
           <span class="ljf-loc-badge">${escapeHtml(la.advertised || "?")}</span>
           <span class="ljf-arrow">→</span>
-          <span class="ljf-loc-actual">${escapeHtml(la.actualRequirement || "Not specified")}</span>
         </div>
+        <div class="ljf-loc-actual">${escapeHtml(la.actualRequirement || "Not specified")}</div>
         ${la.notes ? `<div class="ljf-notes">${escapeHtml(la.notes)}</div>` : ""}
       </div>
 
