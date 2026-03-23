@@ -1,3 +1,4 @@
 .env
 .idea/
 prompt.md
+node_modules
