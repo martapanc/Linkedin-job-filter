@@ -1,0 +1,9 @@
+on:
+  push:
+    branches: [master]
+
+jobs:
+  release:
+    uses: martapanc/shared-workflows/.github/workflows/release-please.yml@master
+    with:
+      release-type: simple
