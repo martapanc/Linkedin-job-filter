@@ -1,0 +1,40 @@
+name: Package Extension
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+      - name: Patch manifest.json version
+        run: |
+          jq --arg v "$VERSION" '.version = $v' manifest.json > manifest.tmp.json
+          mv manifest.tmp.json manifest.json
+
+      - name: Create zip
+        run: |
+          zip -r linkedin-job-filter-v${VERSION}.zip \
+            manifest.json \
+            background.js \
+            content.js \
+            content.css \
+            popup.html \
+            popup.js \
+            sample-prompt.md \
+            README.md \
+            icons/
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: linkedin-job-filter-v${{ env.VERSION }}.zip
