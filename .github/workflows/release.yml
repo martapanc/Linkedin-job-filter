@@ -7,3 +7,6 @@ jobs:
     uses: martapanc/shared-workflows/.github/workflows/release-please.yml@master
     with:
       release-type: simple
+    permissions:
+      contents: write
+      pull-requests: write
