@@ -1,6 +1,6 @@
 // popup.js
 
-const fields = ["apiKey", "model", "workLocation", "requireKeywords", "flagKeywords", "provider", "localModel", "localEndpoint"];
+const fields = ["apiKey", "model", "workLocation", "timezoneRange", "requireKeywords", "flagKeywords", "provider", "localModel", "localEndpoint"];
 
 function updateProviderUI(provider) {
   const isLocal = provider === "local";
@@ -103,7 +103,7 @@ chrome.storage.sync.get(fields, (data) => {
 });
 
 // Text inputs / textareas: debounce to avoid saving on every keystroke
-["apiKey", "workLocation", "requireKeywords", "flagKeywords", "localEndpoint"].forEach(id => {
+["apiKey", "workLocation", "timezoneRange", "requireKeywords", "flagKeywords", "localEndpoint"].forEach(id => {
   document.getElementById(id)?.addEventListener("input", saveDebounced);
 });
 
