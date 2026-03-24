@@ -30,7 +30,7 @@ jobs:
             content.css \
             popup.html \
             popup.js \
-            sample-prompt.md \
+            prompt.md \
             README.md \
             icons/
 
