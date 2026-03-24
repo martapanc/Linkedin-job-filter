@@ -213,6 +213,8 @@
         ${kf.salary ? `<span class="ljf-tag ljf-salary">${escapeHtml(kf.salary)}</span>` : ""}
         ${(kf.stack || []).slice(0, 5).map(t => `<span class="ljf-tag ljf-tech">${escapeHtml(t)}</span>`).join("")}
       </div>
+
+      ${data._model ? `<div class="ljf-model">${escapeHtml(data._model)}</div>` : ""}
     `;
   }
 

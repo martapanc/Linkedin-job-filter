@@ -132,9 +132,11 @@ async function analyzeJob({ jobText, preferences }) {
   const userPrompt = `Analyze this job ad:\n\n${jobText.slice(0, 8000)}`;
 
   let raw;
+  let usedModel;
 
   if (provider === "local") {
     if (!localModel) throw new Error("No local model set. Open the extension popup to configure.");
+    usedModel = localModel;
 
     const endpoint = (localEndpoint || "http://localhost:11434").replace(/\/$/, "");
     const url = `${endpoint}/v1/chat/completions`;
@@ -168,6 +170,7 @@ async function analyzeJob({ jobText, preferences }) {
     if (!apiKey) throw new Error("No API key set. Open the extension popup to configure.");
 
     const selectedModel = model || "gemini-2.5-flash-lite";
+    usedModel = selectedModel;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
@@ -206,7 +209,9 @@ async function analyzeJob({ jobText, preferences }) {
   const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
 
   try {
-    return JSON.parse(cleaned);
+    const parsed = JSON.parse(cleaned);
+    parsed._model = usedModel;
+    return parsed;
   } catch {
     return {
       verdict: "check",
@@ -219,7 +224,8 @@ async function analyzeJob({ jobText, preferences }) {
       },
       flags: [],
       positives: [],
-      keyFacts: { seniority: null, stack: [], contractType: null, salary: null }
+      keyFacts: { seniority: null, stack: [], contractType: null, salary: null },
+      _model: usedModel
     };
   }
 }
