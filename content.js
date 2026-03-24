@@ -97,7 +97,10 @@
     el.innerHTML = `
       <div id="ljf-header">
         <span id="ljf-logo">🔍 Job Filter</span>
-        <button id="ljf-toggle" title="Collapse">−</button>
+        <span>
+            <button id="ljf-refresh" title="Re-analyze" style="display:none">↺</button>
+            <button id="ljf-toggle" title="Collapse">−</button>
+        </span>
       </div>
       <div id="ljf-body">
         <div id="ljf-status" class="ljf-loading">
@@ -117,6 +120,11 @@
       document.getElementById("ljf-toggle").textContent = collapsed ? "+" : "−";
     });
 
+    // Refresh button
+    document.getElementById("ljf-refresh").addEventListener("click", () => {
+      triggerAnalysis();
+    });
+
     return el;
   }
 
@@ -132,6 +140,7 @@
     p.className = "";
     document.getElementById("ljf-status").style.display = "flex";
     document.getElementById("ljf-result").style.display = "none";
+    document.getElementById("ljf-refresh").style.display = "none";
     document.getElementById("ljf-body").style.display = "block";
   }
 
@@ -139,6 +148,7 @@
     const p = ensurePanel();
     p.className = "ljf-check";
     document.getElementById("ljf-status").style.display = "none";
+    document.getElementById("ljf-refresh").style.display = "inline-block";
     const result = document.getElementById("ljf-result");
     result.style.display = "block";
     result.innerHTML = `<div class="ljf-error">⚠️ ${escapeHtml(message)}</div>`;
@@ -150,6 +160,7 @@
     p.className = "ljf-" + verdict;
 
     document.getElementById("ljf-status").style.display = "none";
+    document.getElementById("ljf-refresh").style.display = "inline-block";
     const result = document.getElementById("ljf-result");
     result.style.display = "block";
 

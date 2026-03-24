@@ -101,21 +101,14 @@ linkedin-job-filter/
 ├── content.css        # Styles for the injected panel
 ├── popup.html         # Settings UI
 ├── popup.js           # Settings load/save logic
-├── prompt.md          # Your personal AI prompt (gitignored — create from sample)
-├── sample-prompt.md   # Starter template — copy to prompt.md and customise
+├── prompt.md          # AI prompt — edit to customise behaviour
 ├── icons/             # Extension icons (16×16, 48×48, 128×128 PNG)
 └── README.md
 ```
 
 ## Tweaking the AI prompt
 
-The prompt lives in `prompt.md` (gitignored). To get started:
-
-```bash
-cp sample-prompt.md prompt.md
-```
-
-Edit `prompt.md` to reflect your situation: your region, what counts as a red flag, how strictly to interpret location requirements. Reload the extension after saving — no code changes needed.
+The prompt lives in `prompt.md`. Edit it to reflect your situation: your region, what counts as a red flag, how strictly to interpret location requirements. Reload the extension after saving — no code changes needed.
 
 Your popup settings (work location, keywords, timezone range) are injected automatically at runtime — the prompt itself contains no personal data and does not use placeholders.
 

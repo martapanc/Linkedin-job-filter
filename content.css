@@ -48,7 +48,13 @@
   text-transform: uppercase;
 }
 
-#ljf-toggle {
+#ljf-header > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#ljf-refresh, #ljf-toggle {
   background: none;
   border: 1px solid rgba(255,255,255,0.12);
   color: #888;
@@ -63,7 +69,7 @@
   line-height: 1;
   transition: background 0.15s, color 0.15s;
 }
-#ljf-toggle:hover { background: rgba(255,255,255,0.08); color: #e8e8ea; }
+#ljf-refresh:hover, #ljf-toggle:hover { background: rgba(255,255,255,0.08); color: #e8e8ea; }
 
 /* ── Body ── */
 #ljf-body { padding: 14px; }

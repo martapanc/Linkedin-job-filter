@@ -9,7 +9,7 @@ Chrome extension (Manifest V3) that auto-analyzes LinkedIn job listings using AI
 - `content.js` — injected into LinkedIn, reads the job detail DOM, sends a message to the service worker, renders the result panel
 - `background.js` — service worker, handles AI API calls (Gemini or Ollama) and timezone resolution
 - `popup.html` / `popup.js` — settings UI, reads/writes to `chrome.storage.sync`; all fields auto-save on change/input
-- `prompt.md` — gitignored personal AI prompt; `sample-prompt.md` is the public template
+- `prompt.md` — AI system prompt; defines verdict rules and JSON shape
 
 ## AI providers
 
