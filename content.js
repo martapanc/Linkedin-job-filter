@@ -44,7 +44,11 @@
       ".jobs-description-content__text",
       ".jobs-description__content",
       "#job-details",
-      ".jobs-box__html-content"
+      ".jobs-box__html-content",
+      ".jobs-description",
+      ".show-more-less-html__markup",
+      "article.jobs-description__container",
+      ".core-section-container__content"
     ]
   };
 
@@ -260,6 +264,7 @@
   function onJobDetailChanged() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
+      expandDescription();
       const newId = getJobIdFromURL();
       const jobText = extractJobText();
 
@@ -297,15 +302,48 @@
     }).observe(document, { subtree: true, childList: true });
   }
 
+  // ─── Expand truncated description ("…more" button) ──────────────────────────
+  function expandDescription() {
+    // Button variant (jobs list / search panel)
+    const btn = document.querySelector(
+      ".jobs-description__footer-button, " +
+      "[data-tracking-control-name='public_jobs_show-more-html-btn'], " +
+      ".jobs-description-content__text button"
+    );
+    if (btn) { btn.click(); return; }
+
+    // Span variant on direct /jobs/view/ pages: <span>…<span> more</span></span>
+    const spans = document.querySelectorAll(
+      ".jobs-description span, .jobs-description-content__text span, #job-details span"
+    );
+    for (const span of spans) {
+      if (span.children.length === 0 && span.textContent.trim() === "more") {
+        span.parentElement.click();
+        return;
+      }
+    }
+  }
+
   // ─── Boot ─────────────────────────────────────────────────────────────────────
   startObserver();
 
-  // Try once on initial load (if a job is already open in the URL)
-  setTimeout(() => {
-    const jobText = extractJobText();
-    if (jobText.length > 100) {
-      currentJobId = getJobIdFromURL();
-      triggerAnalysis();
-    }
-  }, 500);
+  // On direct /jobs/view/ pages the job ID is in the URL immediately, but
+  // LinkedIn needs its own API call to render the content. Show the loading
+  // panel right away, then retry until we have enough text to analyse.
+  const directJobId = getJobIdFromURL();
+  if (directJobId) {
+    currentJobId = directJobId;
+    showLoading();
+
+    let initAttempts = 0;
+    const initTimer = setInterval(() => {
+      initAttempts++;
+      expandDescription();
+      const jobText = extractJobText();
+      if (jobText.length > 50 || initAttempts >= 10) {
+        clearInterval(initTimer);
+        triggerAnalysis();
+      }
+    }, 500);
+  }
 })();
