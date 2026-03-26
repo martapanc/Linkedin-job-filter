@@ -81,6 +81,17 @@ function detectTimezone(text) {
 }
 
 function parseTimezoneRange(rangeStr) {
+  // Handle "CET +/-4", "CET ±4", "CET +/- 4 timezones", etc.
+  const relativeMatch = rangeStr.match(/\b([A-Z]{2,5})\s*(?:\+\/-|±)\s*(\d+(?:\.\d+)?)/i);
+  if (relativeMatch) {
+    const abbrev = relativeMatch[1].toUpperCase();
+    const delta = parseFloat(relativeMatch[2]);
+    const baseOffset = TZ_OFFSETS[abbrev] ?? TZ_OFFSETS[abbrev + '_CN'] ?? null;
+    if (baseOffset !== null) {
+      return { low: baseOffset - delta, high: baseOffset + delta, baseLabel: abbrev, delta };
+    }
+  }
+
   // Accept "UTC-8 to UTC+3", "UTC-8 / UTC+3", "-8 to +3", "-8 / +3", etc.
   const nums = [...rangeStr.matchAll(/([+-]?\d+(?:\.\d+)?)/g)].map(m => parseFloat(m[1]));
   if (nums.length >= 2) return { low: Math.min(nums[0], nums[1]), high: Math.max(nums[0], nums[1]) };
