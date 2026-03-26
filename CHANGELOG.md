@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/martapanc/Linkedin-job-filter/compare/v1.1.0...v1.2.0) (2026-03-26)
+
+
+### Features
+
+* **content:** expand truncated descriptions and improve job detection ([d2b38c4](https://github.com/martapanc/Linkedin-job-filter/commit/d2b38c4a5d443de0568e09d014187721327e6255))
+* update icons ([ad977da](https://github.com/martapanc/Linkedin-job-filter/commit/ad977dac280bb81eb94c6e7942acba1ef22de26e))
+
+
+### Bug Fixes
+
+* **timezone:** parse relative TZ range format (e.g. CET +/-4) ([33241b8](https://github.com/martapanc/Linkedin-job-filter/commit/33241b8c6756beeaa6fd5d57bb34f8a58c04d666))
+
 ## [1.1.0](https://github.com/martapanc/Linkedin-job-filter/compare/v1.0.0...v1.1.0) (2026-03-24)
 
 
