@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.0](https://github.com/martapanc/Linkedin-job-filter/compare/v1.2.0...v2.0.0) (2026-03-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* load build/chrome-mv3-prod as the unpacked extension
+
+### Features
+
+* migrate extension to Plasmo + TypeScript (v2.0) ([bd0c37c](https://github.com/martapanc/Linkedin-job-filter/commit/bd0c37cf574d2c3ea60fd4bb52855fa2cbc5dcce))
+* migration to Plasmo ([360e894](https://github.com/martapanc/Linkedin-job-filter/commit/360e894eb9e930d040952a6491f4802d00a5d197))
+
 ## [1.2.0](https://github.com/martapanc/Linkedin-job-filter/compare/v1.1.0...v1.2.0) (2026-03-26)
 
 
