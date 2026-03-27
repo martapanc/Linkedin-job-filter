@@ -63,12 +63,21 @@ Set **Provider → Local model** in the popup. The model selector will load your
 
 ---
 
+### Build the extension
+
+```bash
+yarn install
+yarn build
+```
+
+This produces `build/chrome-mv3-prod/`.
+
 ### Install the extension in Chrome
 
 1. Open `chrome://extensions`
 2. Enable **Developer mode** (top right toggle)
 3. Click **Load unpacked**
-4. Select this folder
+4. Select the `build/chrome-mv3-prod/` folder
 
 ### Configure your preferences
 
@@ -81,7 +90,7 @@ Click the extension icon and fill in:
 - **Work location**: describe where you're based and what you're eligible for
   - Example: `EU citizen based in Andorra. Looking for fully remote roles. No relocation, no hybrid.`
 - **Acceptable timezone range** *(optional)*: the extension resolves this deterministically — no AI guesswork
-  - Example: `UTC-8 to UTC+3`
+  - Example: `UTC-8 to UTC+3` or `CET +/-4`
 - **Require keywords**: tech you want to see (comma-separated)
   - Example: `React, TypeScript, Node.js`
 - **Flag keywords**: phrases that should raise a warning
@@ -95,26 +104,30 @@ Go to **LinkedIn Jobs**, search, and click any listing. The analysis panel appea
 
 ```
 linkedin-job-filter/
-├── manifest.json      # Extension config (MV3)
-├── background.js      # Service worker — AI API calls + timezone resolution
-├── content.js         # Injected into LinkedIn — reads DOM, shows panel
-├── content.css        # Styles for the injected panel
-├── popup.html         # Settings UI
-├── popup.js           # Settings load/save logic
-├── prompt.md          # AI prompt — edit to customise behaviour
-├── icons/             # Extension icons (16×16, 48×48, 128×128 PNG)
+├── assets/
+│   ├── icon.png           # Extension icon
+│   ├── content.css        # Styles for the injected panel
+│   └── prompt.md          # AI prompt — edit to customise behaviour
+├── background/
+│   └── messages/
+│       └── analyzeJob.ts  # Plasmo message handler — AI API calls + timezone resolution
+├── contents/
+│   └── linkedin.ts        # Content script — reads LinkedIn DOM, shows panel
+├── popup.tsx              # Settings UI (React)
+├── popup.css              # Popup styles
+├── package.json           # Plasmo build config + manifest overrides
+├── tsconfig.json
 └── README.md
 ```
 
 ## Tweaking the AI prompt
 
-The prompt lives in `prompt.md`. Edit it to reflect your situation: your region, what counts as a red flag, how strictly to interpret location requirements. Reload the extension after saving — no code changes needed.
+The prompt lives in `assets/prompt.md`. Edit it to reflect your situation: your region, what counts as a red flag, how strictly to interpret location requirements. Run `yarn build` after saving, then reload the extension.
 
 Your popup settings (work location, keywords, timezone range) are injected automatically at runtime — the prompt itself contains no personal data and does not use placeholders.
 
 ## Notes
 
-- **LinkedIn DOM selectors** may break if LinkedIn updates their markup. The relevant selectors are at the top of `content.js` in the `SELECTORS` object.
+- **LinkedIn DOM selectors** may break if LinkedIn updates their markup. The relevant selectors are in the `SELECTORS` object at the top of `contents/linkedin.ts`.
 - **API costs**: Gemini free tier has rate limits sufficient for job searching. Local Ollama models are free.
 - **Privacy**: with Gemini, job text is sent to Google's API. With Ollama, everything stays on your machine.
-- **Icons**: add placeholder PNGs to `icons/` for local development (16×16, 48×48, 128×128).
