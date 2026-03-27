@@ -1,0 +1,50 @@
+{
+  "icons": {
+    "16": "./gen-assets/icon16.plasmo.png",
+    "32": "./gen-assets/icon32.plasmo.png",
+    "48": "./gen-assets/icon48.plasmo.png",
+    "64": "./gen-assets/icon64.plasmo.png",
+    "128": "./gen-assets/icon128.plasmo.png"
+  },
+  "manifest_version": 3,
+  "action": {
+    "default_title": "LinkedIn Job Filter Settings",
+    "default_popup": "popup.html"
+  },
+  "version": "2.0.0",
+  "name": "LinkedIn Job Filter",
+  "description": "AI-powered job ad analyzer. Flags misleading remote listings and checks location eligibility.",
+  "background": {
+    "service_worker": "./static/background/index.ts"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.linkedin.com/jobs/*"
+      ],
+      "js": [
+        "../contents/linkedin.ts"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": [
+    "https://www.linkedin.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/prompt.md"
+      ],
+      "matches": [
+        "https://www.linkedin.com/*"
+      ]
+    }
+  ]
+}
