@@ -1,4 +1,3 @@
-import type { PlasmoMessaging } from "@plasmohq/messaging"
 
 // ── Timezone resolution ──────────────────────────────────────────────────────
 
@@ -145,6 +144,8 @@ async function analyzeJob({ jobText, preferences }: { jobText: string; preferenc
   let raw: string
   let usedModel: string
 
+  const timeoutSignal = AbortSignal.timeout(30_000)
+
   if (provider === "local") {
     if (!localModel) throw new Error("No local model set. Open the extension popup to configure.")
     usedModel = localModel
@@ -153,6 +154,7 @@ async function analyzeJob({ jobText, preferences }: { jobText: string; preferenc
     const response = await fetch(`${endpoint}/v1/chat/completions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: timeoutSignal,
       body: JSON.stringify({
         model: localModel,
         messages: [
@@ -183,6 +185,7 @@ async function analyzeJob({ jobText, preferences }: { jobText: string; preferenc
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: timeoutSignal,
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemInstruction }] },
         contents: [{ role: "user", parts: [{ text: userPrompt }] }],
@@ -235,15 +238,19 @@ async function analyzeJob({ jobText, preferences }: { jobText: string; preferenc
   }
 }
 
-// ── Plasmo message handler ────────────────────────────────────────────────────
+// ── Message handler ───────────────────────────────────────────────────────────
 
-const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
-  try {
-    const result = await analyzeJob(req.body)
-    res.send({ ok: true, result })
-  } catch (err: any) {
-    res.send({ ok: false, error: err.message })
-  }
-}
-
-export default handler
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.name !== "analyzeJob") return false
+  console.log("[LJF bg] handler called, provider:", message.body?.preferences?.provider)
+  analyzeJob(message.body)
+    .then(result => {
+      console.log("[LJF bg] analyzeJob complete")
+      sendResponse({ ok: true, result })
+    })
+    .catch((err: any) => {
+      console.error("[LJF bg] analyzeJob error:", err.message)
+      sendResponse({ ok: false, error: err.message })
+    })
+  return true // keep channel open for async response
+})

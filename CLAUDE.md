@@ -9,7 +9,7 @@ Built with **Plasmo** (v0.90.5) + TypeScript + React. Build output is in `build/
 ## Architecture
 
 - `contents/linkedin.ts` — injected into LinkedIn, reads the job detail DOM, sends a message to the background handler, renders the result panel
-- `background/messages/analyzeJob.ts` — Plasmo message handler, handles AI API calls (Gemini or Ollama) and timezone resolution
+- `background/index.ts` — background service worker; registers a `chrome.runtime.onMessage` listener, handles AI API calls (Gemini or Ollama) and timezone resolution
 - `popup.tsx` / `popup.css` — settings UI React component, reads/writes to `chrome.storage.sync` via `@plasmohq/storage`
 - `assets/prompt.md` — AI system prompt; defines verdict rules and JSON shape
 - `assets/content.css` — styles for the injected panel (imported as `data-text:` in the content script)
