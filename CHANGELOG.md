@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.1](https://github.com/martapanc/Linkedin-job-filter/compare/v2.0.0...v2.0.1) (2026-03-29)
+
+
+### Bug Fixes
+
+* replace Plasmo messaging with chrome.runtime to fix single job p… ([a133089](https://github.com/martapanc/Linkedin-job-filter/commit/a13308989bf78ab09fef1f279fa813dcedea0fc0))
+* replace Plasmo messaging with chrome.runtime to fix single job page hang ([7ad44cf](https://github.com/martapanc/Linkedin-job-filter/commit/7ad44cf9d3d5b662b4b1bfeff3a5145029c2f161))
+
 ## [2.0.0](https://github.com/martapanc/Linkedin-job-filter/compare/v1.2.0...v2.0.0) (2026-03-27)
 
 
