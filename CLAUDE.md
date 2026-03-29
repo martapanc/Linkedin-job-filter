@@ -21,7 +21,7 @@ Two providers are supported, selected via the popup:
 - **Gemini** (default) — calls `generativelanguage.googleapis.com` with the AI Studio API key
 - **Local** — calls any OpenAI-compatible `/v1/chat/completions` endpoint (default: Ollama at `http://localhost:11434`)
 
-The branch is in `analyzeJob()` in `background/messages/analyzeJob.ts`. Both paths use the same system prompt and return the same JSON shape.
+The branch is in `analyzeJob()` in `background/index.ts`. Both paths use the same system prompt and return the same JSON shape.
 
 Ollama must be started with `OLLAMA_ORIGINS="*"` to allow requests from the extension's `chrome-extension://` origin.
 
@@ -34,7 +34,7 @@ The system instruction sent to the AI is built in `analyzeJob()` as:
 [assets/prompt.md contents]
 ```
 
-The user context block is assembled in `background/messages/analyzeJob.ts` (not in the prompt file):
+The user context block is assembled in `background/index.ts` (not in the prompt file):
 - `User location: {workLocation}`
 - `Must-have keywords: {requireKeywords}`
 - `Flag keywords: {flagKeywords}`
@@ -44,7 +44,7 @@ The user context block is assembled in `background/messages/analyzeJob.ts` (not 
 
 ## Timezone resolution
 
-Handled entirely in `background/messages/analyzeJob.ts` by `resolveTzCompatibility()` — the AI does no arithmetic.
+Handled entirely in `background/index.ts` by `resolveTzCompatibility()` — the AI does no arithmetic.
 
 1. `detectTimezone(jobText)` scans for UTC/GMT offset patterns, written-out timezone names, and abbreviations (PST, MST, CET, JST, etc.) using `TZ_OFFSETS` lookup table
 2. `parseTimezoneRange(rangeStr)` parses the user's range string (e.g. `"UTC-8 to UTC+3"` or `"CET +/-4"`) into `{ low, high }`
