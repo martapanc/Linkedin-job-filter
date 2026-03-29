@@ -98,7 +98,7 @@ Click the extension icon and fill in:
 
 ### Use it
 
-Go to **LinkedIn Jobs**, search, and click any listing. The analysis panel appears in the bottom-right corner within a few seconds.
+Go to **LinkedIn Jobs**, search, and click any listing — or open a job directly via its URL (e.g. `linkedin.com/jobs/view/…`). The analysis panel appears in the bottom-right corner within a few seconds.
 
 ## File structure
 
@@ -109,8 +109,7 @@ linkedin-job-filter/
 │   ├── content.css        # Styles for the injected panel
 │   └── prompt.md          # AI prompt — edit to customise behaviour
 ├── background/
-│   └── messages/
-│       └── analyzeJob.ts  # Plasmo message handler — AI API calls + timezone resolution
+│   └── index.ts           # Service worker — AI API calls + timezone resolution
 ├── contents/
 │   └── linkedin.ts        # Content script — reads LinkedIn DOM, shows panel
 ├── popup.tsx              # Settings UI (React)

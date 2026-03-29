@@ -2,7 +2,6 @@
 // Watches for job detail panel changes and injects the analysis overlay.
 
 import type { PlasmoCSConfig } from "plasmo"
-import { sendToBackground } from "@plasmohq/messaging"
 import cssText from "data-text:~assets/content.css"
 
 export const config: PlasmoCSConfig = {
@@ -47,6 +46,7 @@ const SELECTORS = {
     ".tvm__text"
   ],
   description: [
+    "[data-testid='expandable-text-box']",
     ".jobs-description-content__text",
     ".jobs-description__content",
     "#job-details",
@@ -237,7 +237,11 @@ function escapeHtml(str: string): string {
 // ─── Main analysis trigger ────────────────────────────────────────────────────
 async function triggerAnalysis() {
   const jobText = extractJobText()
-  if (!jobText || jobText.length < 50) return
+  console.log("[LJF] triggerAnalysis — jobText length:", jobText.length, "preview:", jobText.slice(0, 80))
+  if (!jobText || jobText.length < 50) {
+    showError("Could not read job details — LinkedIn may have updated their page layout. Try refreshing.")
+    return
+  }
 
   showLoading()
 
@@ -254,8 +258,16 @@ async function triggerAnalysis() {
     )
   })
 
+  console.log("[LJF] sending to background, provider:", preferences.provider)
   try {
-    const response = await sendToBackground({ name: "analyzeJob", body: { jobText, preferences } })
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Request timed out after 60s")), 60_000)
+    )
+    const response = await Promise.race([
+      chrome.runtime.sendMessage({ name: "analyzeJob", body: { jobText, preferences } }),
+      timeout
+    ])
+    console.log("[LJF] response from background:", response)
     if (!response.ok) {
       showError(response.error || "Unknown error")
       return
@@ -305,6 +317,7 @@ function startObserver() {
 // ─── Expand truncated description ("…more" button) ──────────────────────────
 function expandDescription() {
   const btn = document.querySelector(
+    "[data-testid='expandable-text-button'], " +
     ".jobs-description__footer-button, " +
     "[data-tracking-control-name='public_jobs_show-more-html-btn'], " +
     ".jobs-description-content__text button"
@@ -326,6 +339,7 @@ function expandDescription() {
 startObserver()
 
 const directJobId = getJobIdFromURL()
+console.log("[LJF] boot — directJobId:", directJobId, "url:", window.location.href)
 if (directJobId) {
   currentJobId = directJobId
   showLoading()
@@ -333,8 +347,9 @@ if (directJobId) {
   let initAttempts = 0
   const initTimer = setInterval(() => {
     initAttempts++
-    expandDescription()
     const jobText = extractJobText()
+    console.log(`[LJF] initTimer attempt ${initAttempts} — jobText length: ${jobText.length}`)
+    expandDescription()
     if (jobText.length > 50 || initAttempts >= 10) {
       clearInterval(initTimer)
       triggerAnalysis()
