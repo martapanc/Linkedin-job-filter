@@ -106,7 +106,7 @@ function createPanel(): HTMLElement {
   el.id = "ljf-panel"
   el.innerHTML = `
     <div id="ljf-header">
-      <span id="ljf-logo">🔍 Job Filter</span>
+      <span id="ljf-logo">\uD83D\uDD0D Job Filter</span> <!--🔍 emoji-->
       <span>
           <button id="ljf-refresh" title="Re-analyze" style="display:none">↺</button>
           <button id="ljf-toggle" title="Collapse">−</button>
