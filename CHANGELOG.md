@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.1.0](https://github.com/martapanc/Linkedin-job-filter/compare/v2.0.1...v2.1.0) (2026-03-31)
+
+
+### Features
+
+* **panel:** add dismiss button to hide the analysis panel ([2c0b908](https://github.com/martapanc/Linkedin-job-filter/commit/2c0b908eb58407bae6da4c5bcbfeb5c3f4611358))
+
+
+### Bug Fixes
+
+* magnifying-glass emoji visualization ([e18b5b5](https://github.com/martapanc/Linkedin-job-filter/commit/e18b5b5278feb7424fbc0830bc71793aca061193))
+* magnifying-glass emoji visualization ([56b1c72](https://github.com/martapanc/Linkedin-job-filter/commit/56b1c729504126dda722888f54306bfabc228128))
+
 ## [2.0.1](https://github.com/martapanc/Linkedin-job-filter/compare/v2.0.0...v2.0.1) (2026-03-29)
 
 
