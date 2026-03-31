@@ -106,10 +106,11 @@ function createPanel(): HTMLElement {
   el.id = "ljf-panel"
   el.innerHTML = `
     <div id="ljf-header">
-      <span id="ljf-logo">🔍 Job Filter</span>
+      <span id="ljf-logo">\uD83D\uDD0D Job Filter</span> <!--🔍 emoji-->
       <span>
           <button id="ljf-refresh" title="Re-analyze" style="display:none">↺</button>
           <button id="ljf-toggle" title="Collapse">−</button>
+          <button id="ljf-close" title="Dismiss">×</button>
       </span>
     </div>
     <div id="ljf-body">
@@ -133,6 +134,10 @@ function createPanel(): HTMLElement {
     triggerAnalysis()
   })
 
+  document.getElementById("ljf-close")!.addEventListener("click", () => {
+    el.style.display = "none"
+  })
+
   return el
 }
 
@@ -145,6 +150,7 @@ function ensurePanel(): HTMLElement {
 
 function showLoading() {
   const p = ensurePanel()
+  p.style.display = ""
   p.className = ""
   document.getElementById("ljf-status")!.style.display = "flex"
   document.getElementById("ljf-result")!.style.display = "none"
