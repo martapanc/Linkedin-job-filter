@@ -5,6 +5,20 @@ import "./popup.css"
 
 const syncStorage = new Storage({ area: "sync" })
 
+interface LastError {
+  message: string
+  timestamp: number
+  provider: string
+  model: string
+}
+
+function relativeTime(ts: number): string {
+  const secs = Math.floor((Date.now() - ts) / 1000)
+  if (secs < 60) return "just now"
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`
+  return `${Math.floor(secs / 3600)}h ago`
+}
+
 export default function IndexPopup() {
   const [provider, setProvider] = useStorage({ key: "provider", instance: syncStorage }, "gemini")
   const [apiKey, setApiKey] = useStorage({ key: "apiKey", instance: syncStorage }, "")
@@ -21,6 +35,25 @@ export default function IndexPopup() {
   const [modelStatus, setModelStatus] = useState("")
   const [modelStatusColor, setModelStatusColor] = useState("#555")
   const [saved, setSaved] = useState(false)
+  const [lastError, setLastError] = useState<LastError | null>(null)
+
+  useEffect(() => {
+    chrome.storage.local.get("lastError", (data) => {
+      setLastError(data.lastError ?? null)
+    })
+    const listener = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+      if (area === "local" && "lastError" in changes) {
+        setLastError(changes.lastError.newValue ?? null)
+      }
+    }
+    chrome.storage.onChanged.addListener(listener)
+    return () => chrome.storage.onChanged.removeListener(listener)
+  }, [])
+
+  function dismissError() {
+    chrome.storage.local.remove("lastError")
+    setLastError(null)
+  }
 
   const isLocal = (provider ?? "gemini") === "local"
 
@@ -37,6 +70,8 @@ export default function IndexPopup() {
       setLocalModels(models)
       if (savedModelId && models.includes(savedModelId)) {
         setLocalModel(savedModelId)
+      } else if (!savedModelId) {
+        setLocalModel(models[0])
       }
       setModelStatus(`✓ ${models.length} model${models.length !== 1 ? "s" : ""} available`)
       setModelStatusColor("#22c55e")
@@ -76,6 +111,17 @@ export default function IndexPopup() {
           {isLocal ? "powered by local model (Ollama)" : "powered by Google Gemini"}
         </div>
       </div>
+
+      {lastError && (
+        <div className="error-box">
+          <div className="error-box-header">
+            <span className="error-box-title">⚠ Last error</span>
+            <span className="error-box-meta">{lastError.provider} · {lastError.model} · {relativeTime(lastError.timestamp)}</span>
+            <button className="error-box-dismiss" onClick={dismissError} title="Dismiss">×</button>
+          </div>
+          <div className="error-box-message">{lastError.message}</div>
+        </div>
+      )}
 
       <div className="content">
         <div className="field">
@@ -146,7 +192,9 @@ export default function IndexPopup() {
                   onChange={e => setLocalModel(e.target.value)}
                   style={{ flex: 1 }}>
                   {localModels.length === 0
-                    ? <option value="">— connect to load models —</option>
+                    ? localModel
+                      ? <option value={localModel}>{localModel} (Ollama offline)</option>
+                      : <option value="">— connect to load models —</option>
                     : localModels.map(id => <option key={id} value={id}>{id}</option>)
                   }
                 </select>

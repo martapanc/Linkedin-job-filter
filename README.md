@@ -130,3 +130,50 @@ Your popup settings (work location, keywords, timezone range) are injected autom
 - **LinkedIn DOM selectors** may break if LinkedIn updates their markup. The relevant selectors are in the `SELECTORS` object at the top of `contents/linkedin.ts`.
 - **API costs**: Gemini free tier has rate limits sufficient for job searching. Local Ollama models are free.
 - **Privacy**: with Gemini, job text is sent to Google's API. With Ollama, everything stays on your machine.
+
+## Troubleshooting: CORS / connection timeout with Ollama
+Chrome extensions have a non-web origin, so requests to Ollama are blocked by CORS unless you explicitly allow all origins. If you see a connection timeout when using the local model:
+1. Set the env var before starting Ollama
+
+```OLLAMA_ORIGINS="*" ollama serve```
+
+If Ollama is already running (e.g. auto-started by the macOS app), kill it first:
+```bash 
+pkill ollama
+sleep 2
+OLLAMA_ORIGINS="*" ollama serve > /tmp/ollama.log 2>&1 &
+```
+
+Verify the server is up and the var was picked up:
+```bash
+curl http://localhost:11434/api/tags                       # should return JSON
+ps eww $(pgrep ollama) | tr ' ' '\n' | grep OLLAMA_ORIGINS   # should print the var
+```
+
+2. Make the env var persist across reboots (macOS)
+`launchctl setenv` is session-only and doesn't survive a reboot. To inject it permanently at login, create a Launch Agent:
+
+```bash
+cat > ~/Library/LaunchAgents/com.ollama.origins.plist << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.ollama.origins</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/launchctl</string>
+    <string>setenv</string>
+    <string>OLLAMA_ORIGINS</string>
+    <string>*</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+</dict>
+</plist>
+EOF
+
+launchctl load ~/Library/LaunchAgents/com.ollama.origins.plist
+launchctl setenv OLLAMA_ORIGINS "*"   # also apply to the current session
+```   

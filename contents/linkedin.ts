@@ -79,7 +79,19 @@ function extractJobText(): string {
   const parts: string[] = []
 
   const titleEl = queryFirst(SELECTORS.title)
-  if (titleEl) parts.push("JOB TITLE: " + (titleEl as HTMLElement).innerText.trim())
+  const panelTitle = titleEl ? (titleEl as HTMLElement).innerText.trim() : ""
+  if (panelTitle) parts.push("JOB TITLE: " + panelTitle)
+
+  // The search card link (left sidebar) sometimes contains extra info not shown
+  // in the detail panel title, e.g. "Senior Engineer UK Based" vs "Senior Engineer"
+  const jobId = getJobIdFromURL()
+  if (jobId) {
+    const cardLink = document.querySelector(`a[href*="/jobs/view/${jobId}"]`) as HTMLElement | null
+    const cardTitle = cardLink?.innerText.trim() ?? ""
+    if (cardTitle && cardTitle !== panelTitle) {
+      parts.push("JOB CARD TITLE: " + cardTitle)
+    }
+  }
 
   const companyEl = queryFirst(SELECTORS.company)
   if (companyEl) parts.push("COMPANY: " + (companyEl as HTMLElement).innerText.trim())
@@ -266,8 +278,9 @@ async function triggerAnalysis() {
 
   console.log("[LJF] sending to background, provider:", preferences.provider)
   try {
+    const isLocal = preferences.provider === "local"
     const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("Request timed out after 60s")), 60_000)
+      setTimeout(() => reject(new Error(`Request timed out after ${isLocal ? "130s" : "60s"}`)), isLocal ? 130_000 : 60_000)
     )
     const response = await Promise.race([
       chrome.runtime.sendMessage({ name: "analyzeJob", body: { jobText, preferences } }),
@@ -280,7 +293,11 @@ async function triggerAnalysis() {
     }
     showResult(response.result)
   } catch (err: any) {
-    showError("Extension error: " + err.message)
+    if (err?.message?.includes("Extension context invalidated")) {
+      showError("Extension was reloaded — please refresh this page and try again.")
+    } else {
+      showError("Extension error: " + err.message)
+    }
   }
 }
 
