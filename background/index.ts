@@ -157,11 +157,12 @@ async function analyzeJob({ jobText, preferences }: { jobText: string; preferenc
       signal: timeoutSignal,
       body: JSON.stringify({
         model: localModel,
+        keep_alive: "60m",
         messages: [
           { role: "system", content: systemInstruction },
           { role: "user", content: userPrompt }
         ],
-        temperature: 0.1
+        temperature: 0.1,
       })
     })
 
@@ -214,7 +215,9 @@ async function analyzeJob({ jobText, preferences }: { jobText: string; preferenc
     }
   }
 
-  const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim()
+  // Strip <think>…</think> blocks produced by reasoning models (e.g. DeepSeek R1)
+  const stripped = raw.replace(/<think>[\s\S]*?<\/think>/gi, "").trim()
+  const cleaned = stripped.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim()
 
   try {
     const parsed = JSON.parse(cleaned)
