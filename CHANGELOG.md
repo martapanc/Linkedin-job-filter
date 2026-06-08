@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.0](https://github.com/martapanc/Linkedin-job-filter/compare/v2.1.0...v2.2.0) (2026-06-08)
+
+
+### Features
+
+* improve local model support, popup error display, and job card … ([00bf77f](https://github.com/martapanc/Linkedin-job-filter/commit/00bf77fe90b897c919922beeebaa78bfcf20b39d))
+* improve local model support, popup error display, and job card title analysis ([3adef2a](https://github.com/martapanc/Linkedin-job-filter/commit/3adef2a9ae16e947153a4a204c0b17a06c9431c1))
+
 ## [2.1.0](https://github.com/martapanc/Linkedin-job-filter/compare/v2.0.1...v2.1.0) (2026-03-31)
 
 
