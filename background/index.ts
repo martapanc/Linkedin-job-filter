@@ -144,7 +144,7 @@ async function analyzeJob({ jobText, preferences }: { jobText: string; preferenc
   let raw: string
   let usedModel: string
 
-  const timeoutSignal = AbortSignal.timeout(30_000)
+  const timeoutSignal = AbortSignal.timeout(provider === "local" ? 120_000 : 30_000)
 
   if (provider === "local") {
     if (!localModel) throw new Error("No local model set. Open the extension popup to configure.")
@@ -243,13 +243,25 @@ async function analyzeJob({ jobText, preferences }: { jobText: string; preferenc
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.name !== "analyzeJob") return false
   console.log("[LJF bg] handler called, provider:", message.body?.preferences?.provider)
+  const prefs = message.body?.preferences ?? {}
   analyzeJob(message.body)
     .then(result => {
+      chrome.storage.local.remove("lastError")
       console.log("[LJF bg] analyzeJob complete")
       sendResponse({ ok: true, result })
     })
     .catch((err: any) => {
       console.error("[LJF bg] analyzeJob error:", err.message)
+      chrome.storage.local.set({
+        lastError: {
+          message: err.message,
+          timestamp: Date.now(),
+          provider: prefs.provider ?? "unknown",
+          model: prefs.provider === "local"
+            ? (prefs.localModel || "—")
+            : (prefs.model || "gemini-2.5-flash-lite"),
+        }
+      })
       sendResponse({ ok: false, error: err.message })
     })
   return true // keep channel open for async response
