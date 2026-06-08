@@ -49,13 +49,15 @@ If you get `address already in use`: `pkill ollama` first, then re-run the comma
 #### 3. Pull a model
 
 ```bash
-ollama pull qwen2.5:7b    # 4.7 GB — best at following structured JSON instructions
-ollama pull mistral       # 4.4 GB — strong general reasoning
-ollama pull llama3.2      # 2.0 GB — lightest option, good starting point
-ollama pull deepseek-r1   # 5.2 GB — strong reasoning, slower
+ollama pull qwen2.5:7b    # 4.7 GB — recommended: best JSON instruction following
+ollama pull gemma3:4b     # 2.5 GB — fastest option, surprisingly reliable
+ollama pull qwen2.5:14b   # 9 GB — better accuracy, worth it on 16 GB+ RAM
+ollama pull mistral       # 4.4 GB — strong general reasoning, good fallback
 ```
 
-The popup model selector auto-populates from your running Ollama instance. **`qwen2.5:7b` is recommended** for this task — it follows system prompt instructions most reliably among smaller models.
+**`qwen2.5:7b` is recommended** for this task — structured JSON extraction needs reliable instruction following, not reasoning depth. Avoid `deepseek-r1` and other reasoning models: they generate a chain of thought before answering, which adds latency with no benefit here.
+
+**Performance tip**: add `"keep_alive": "60m"` to your Ollama API calls to keep the model loaded between requests. Without it, each analysis pays a 5–10s cold-load penalty.
 
 #### 4. Configure the extension
 
