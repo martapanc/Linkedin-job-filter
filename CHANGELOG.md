@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.3.0](https://github.com/martapanc/Linkedin-job-filter/compare/v2.2.0...v2.3.0) (2026-06-08)
+
+
+### Features
+
+* add keep_alive flag ([7e2b063](https://github.com/martapanc/Linkedin-job-filter/commit/7e2b063ee257d852df8248395471eba3fa054561))
+* add keep_alive flag ([800f9b5](https://github.com/martapanc/Linkedin-job-filter/commit/800f9b5e06ac7a2cefc8d0952696ce01dc8c5547))
+* update Readme with recommended models ([8098912](https://github.com/martapanc/Linkedin-job-filter/commit/8098912a12585282008a5e324955bff0e61e868f))
+
 ## [2.2.0](https://github.com/martapanc/Linkedin-job-filter/compare/v2.1.0...v2.2.0) (2026-06-08)
 
 
