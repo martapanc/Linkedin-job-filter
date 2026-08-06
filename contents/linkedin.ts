@@ -18,6 +18,12 @@ document.head.appendChild(style)
 let currentJobId: string | null = null
 let panel: HTMLElement | null = null
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+// Incremented on every analysis start and on every job switch — an in-flight
+// analysis whose seq is no longer the latest must not render its result.
+let requestSeq = 0
+// Text of the last job we sent for analysis, used to tell whether LinkedIn has
+// actually swapped the detail panel content or is still showing the old job.
+let lastAnalyzedText = ""
 
 // ─── LinkedIn DOM selectors (with fallbacks — LinkedIn changes these often) ──
 const SELECTORS = {
@@ -261,6 +267,13 @@ async function triggerAnalysis() {
     return
   }
 
+  const seq = ++requestSeq
+  const jobIdAtStart = getJobIdFromURL()
+  // The user may open another listing while this request is in flight; anything
+  // that comes back after that belongs to a job we're no longer looking at.
+  const isStale = () => seq !== requestSeq || getJobIdFromURL() !== jobIdAtStart
+
+  lastAnalyzedText = jobText
   showLoading()
 
   const preferences = await new Promise<Record<string, string>>(resolve => {
@@ -276,28 +289,45 @@ async function triggerAnalysis() {
     )
   })
 
+  if (isStale()) {
+    console.log("[LJF] job changed while loading preferences — abandoning request")
+    return
+  }
+
   console.log("[LJF] sending to background, provider:", preferences.provider)
+  let timeoutTimer: ReturnType<typeof setTimeout> | null = null
   try {
     const isLocal = preferences.provider === "local"
-    const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`Request timed out after ${isLocal ? "130s" : "60s"}`)), isLocal ? 130_000 : 60_000)
-    )
+    const timeout = new Promise<never>((_, reject) => {
+      timeoutTimer = setTimeout(
+        () => reject(new Error(`Request timed out after ${isLocal ? "130s" : "60s"}`)),
+        isLocal ? 130_000 : 60_000
+      )
+    })
     const response = await Promise.race([
       chrome.runtime.sendMessage({ name: "analyzeJob", body: { jobText, preferences } }),
       timeout
     ])
     console.log("[LJF] response from background:", response)
+    if (isStale()) {
+      console.log("[LJF] job changed before response arrived — discarding stale result")
+      return
+    }
     if (!response.ok) {
+      if (response.cancelled) return
       showError(response.error || "Unknown error")
       return
     }
     showResult(response.result)
   } catch (err: any) {
+    if (isStale()) return
     if (err?.message?.includes("Extension context invalidated")) {
       showError("Extension was reloaded — please refresh this page and try again.")
     } else {
       showError("Extension error: " + err.message)
     }
+  } finally {
+    if (timeoutTimer) clearTimeout(timeoutTimer)
   }
 }
 
@@ -310,6 +340,10 @@ function onJobDetailChanged() {
     const jobText = extractJobText()
 
     if (jobText.length > 100 && newId !== currentJobId) {
+      // LinkedIn swaps the URL before the detail panel content: if the text is
+      // still the previous job's, wait for the next mutation instead of
+      // analyzing the old job under the new job's id.
+      if (jobText === lastAnalyzedText) return
       currentJobId = newId
       triggerAnalysis()
     }
@@ -330,10 +364,16 @@ function startObserver() {
 
   let lastUrl = location.href
   new MutationObserver(() => {
-    if (location.href !== lastUrl) {
-      lastUrl = location.href
-      currentJobId = null
-    }
+    if (location.href === lastUrl) return
+    lastUrl = location.href
+
+    const newId = getJobIdFromURL()
+    if (newId === currentJobId) return
+
+    currentJobId = null
+    // Invalidate any in-flight analysis so its result can't land on this job.
+    requestSeq++
+    if (newId) showLoading()
   }).observe(document, { subtree: true, childList: true })
 }
 
@@ -369,6 +409,12 @@ if (directJobId) {
 
   let initAttempts = 0
   const initTimer = setInterval(() => {
+    // User navigated to another listing before the initial one was ready —
+    // the observer takes over from here.
+    if (getJobIdFromURL() !== directJobId) {
+      clearInterval(initTimer)
+      return
+    }
     initAttempts++
     const jobText = extractJobText()
     console.log(`[LJF] initTimer attempt ${initAttempts} — jobText length: ${jobText.length}`)

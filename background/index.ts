@@ -123,7 +123,10 @@ interface Preferences {
   localEndpoint?: string
 }
 
-async function analyzeJob({ jobText, preferences }: { jobText: string; preferences: Preferences }) {
+async function analyzeJob(
+  { jobText, preferences }: { jobText: string; preferences: Preferences },
+  cancelSignal?: AbortSignal
+) {
   const { model, workLocation, timezoneRange, flagKeywords, requireKeywords, provider, localModel } = preferences
   const apiKey = preferences.apiKey?.trim()
   const localEndpoint = preferences.localEndpoint?.trim()
@@ -144,7 +147,10 @@ async function analyzeJob({ jobText, preferences }: { jobText: string; preferenc
   let raw: string
   let usedModel: string
 
-  const timeoutSignal = AbortSignal.timeout(provider === "local" ? 120_000 : 30_000)
+  const requestTimeout = AbortSignal.timeout(provider === "local" ? 120_000 : 30_000)
+  const timeoutSignal = cancelSignal
+    ? AbortSignal.any([requestTimeout, cancelSignal])
+    : requestTimeout
 
   if (provider === "local") {
     if (!localModel) throw new Error("No local model set. Open the extension popup to configure.")
@@ -243,17 +249,38 @@ async function analyzeJob({ jobText, preferences }: { jobText: string; preferenc
 
 // ── Message handler ───────────────────────────────────────────────────────────
 
+// One analysis at a time per tab: opening another job listing supersedes the
+// previous request, so we abort it instead of letting it finish unused.
+const CANCELLED = "LJF_SUPERSEDED"
+const inFlight = new Map<number, AbortController>()
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.name !== "analyzeJob") return false
   console.log("[LJF bg] handler called, provider:", message.body?.preferences?.provider)
   const prefs = message.body?.preferences ?? {}
-  analyzeJob(message.body)
+
+  const tabId = _sender.tab?.id ?? -1
+  inFlight.get(tabId)?.abort(new DOMException(CANCELLED, "AbortError"))
+  const controller = new AbortController()
+  inFlight.set(tabId, controller)
+  const done = () => {
+    if (inFlight.get(tabId) === controller) inFlight.delete(tabId)
+  }
+
+  analyzeJob(message.body, controller.signal)
     .then(result => {
+      done()
       chrome.storage.local.remove("lastError")
       console.log("[LJF bg] analyzeJob complete")
       sendResponse({ ok: true, result })
     })
     .catch((err: any) => {
+      done()
+      if (controller.signal.aborted && controller.signal.reason?.message === CANCELLED) {
+        console.log("[LJF bg] analyzeJob cancelled — superseded by a newer job")
+        sendResponse({ ok: false, cancelled: true, error: "Superseded by a newer request" })
+        return
+      }
       console.error("[LJF bg] analyzeJob error:", err.message)
       chrome.storage.local.set({
         lastError: {
