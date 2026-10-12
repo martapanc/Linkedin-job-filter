@@ -29,6 +29,7 @@ export default function IndexPopup() {
   const [flagKeywords, setFlagKeywords] = useStorage({ key: "flagKeywords", instance: syncStorage }, "")
   const [localModel, setLocalModel] = useStorage({ key: "localModel", instance: syncStorage }, "")
   const [localEndpoint, setLocalEndpoint] = useStorage({ key: "localEndpoint", instance: syncStorage }, "http://localhost:11434")
+  const [panelPosition, setPanelPosition] = useStorage({ key: "panelPosition", instance: syncStorage }, "bottom-right")
 
   const [showKey, setShowKey] = useState(false)
   const [localModels, setLocalModels] = useState<string[]>([])
@@ -261,6 +262,21 @@ export default function IndexPopup() {
             rows={2}
             placeholder="e.g. UK only, must be based in, right to work in UK, sponsorship not available"
           />
+        </div>
+
+        <hr className="divider" />
+
+        <div className="field">
+          <label>
+            Panel position
+            <span className="label-hint"> — corner of the LinkedIn page</span>
+          </label>
+          <select value={panelPosition ?? "bottom-right"} onChange={e => setPanelPosition(e.target.value)}>
+            <option value="bottom-right">Bottom right (default)</option>
+            <option value="bottom-left">Bottom left</option>
+            <option value="top-right">Top right</option>
+            <option value="top-left">Top left</option>
+          </select>
         </div>
 
         <button className="save-btn" onClick={handleSave}>Save settings</button>

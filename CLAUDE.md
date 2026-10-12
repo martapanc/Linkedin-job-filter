@@ -64,6 +64,7 @@ Handled entirely in `background/index.ts` by `resolveTzCompatibility()` — the 
 | `timezoneRange` | string | — |
 | `requireKeywords` | string | — |
 | `flagKeywords` | string | — |
+| `panelPosition` | `"bottom-right"` \| `"bottom-left"` \| `"top-right"` \| `"top-left"` | `"bottom-right"` |
 
 All keys are stored in `chrome.storage.sync`. The popup uses `@plasmohq/storage` with `{ area: "sync" }` explicitly; the content script reads via `chrome.storage.sync.get` directly.
 

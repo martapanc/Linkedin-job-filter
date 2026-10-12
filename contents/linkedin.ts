@@ -141,6 +141,8 @@ function createPanel(): HTMLElement {
   `
   document.body.appendChild(el)
 
+  chrome.storage.sync.get("panelPosition", (raw) => applyPanelPosition(raw.panelPosition))
+
   let collapsed = false
   document.getElementById("ljf-toggle")!.addEventListener("click", () => {
     collapsed = !collapsed
@@ -158,6 +160,22 @@ function createPanel(): HTMLElement {
 
   return el
 }
+
+// ─── Panel position (bottom-right | bottom-left | top-right | top-left) ─────
+function applyPanelPosition(raw: unknown) {
+  const el = document.getElementById("ljf-panel")
+  if (!el) return
+  let value = raw
+  try { value = JSON.parse(raw as string) } catch {}
+  el.dataset.position = typeof value === "string" && value ? value : "bottom-right"
+}
+
+// Move the panel live when the setting changes in the popup
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "sync" && "panelPosition" in changes) {
+    applyPanelPosition(changes.panelPosition.newValue)
+  }
+})
 
 function ensurePanel(): HTMLElement {
   if (!document.getElementById("ljf-panel")) {

@@ -21,6 +21,11 @@
   border: 1.5px solid rgba(255,255,255,0.08);
 }
 
+/* Panel corner — set from the `panelPosition` setting. Top positions clear LinkedIn's sticky nav bar. */
+#ljf-panel[data-position="bottom-left"] { right: auto; left: 24px; }
+#ljf-panel[data-position="top-right"]   { bottom: auto; top: 72px; }
+#ljf-panel[data-position="top-left"]    { bottom: auto; top: 72px; right: auto; left: 24px; }
+
 /* Verdict color accents on the panel border */
 #ljf-panel.ljf-suitable { border-color: #22c55e; box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px #22c55e33; }
 #ljf-panel.ljf-check    { border-color: #f59e0b; box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px #f59e0b33; }
